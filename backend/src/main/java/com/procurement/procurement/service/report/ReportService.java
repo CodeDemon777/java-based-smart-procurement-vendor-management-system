@@ -120,67 +120,74 @@ public class ReportService {
             doc.add(fp);
         }
 
+        boolean showVendors = request.getReportType() == null || "all".equalsIgnoreCase(request.getReportType()) || "vendor".equalsIgnoreCase(request.getReportType());
+        boolean showPOs = request.getReportType() == null || "all".equalsIgnoreCase(request.getReportType()) || "po".equalsIgnoreCase(request.getReportType());
+
         // ──────────────────── VENDORS TABLE ────────────────────
-        Paragraph vsection = new Paragraph("Vendors", sectionFont);
-        vsection.setSpacingAfter(6);
-        doc.add(vsection);
+        if (showVendors) {
+            Paragraph vsection = new Paragraph("Vendors", sectionFont);
+            vsection.setSpacingAfter(6);
+            doc.add(vsection);
 
-        PdfPTable vtable = new PdfPTable(5);
-        vtable.setWidthPercentage(100);
-        vtable.setWidths(new float[] { 1f, 3f, 3f, 2f, 2f });
-        vtable.setSpacingAfter(16);
-        String[] vHeaders = { "ID", "Name", "Email", "Contact", "Status" };
-        for (String h : vHeaders)
-            addHeader(vtable, h);
+            PdfPTable vtable = new PdfPTable(5);
+            vtable.setWidthPercentage(100);
+            vtable.setWidths(new float[] { 1f, 3f, 3f, 2f, 2f });
+            vtable.setSpacingAfter(16);
+            String[] vHeaders = { "ID", "Name", "Email", "Contact", "Status" };
+            for (String h : vHeaders)
+                addHeader(vtable, h);
 
-        if (vendors.isEmpty()) {
-            PdfPCell noData = new PdfPCell(new Phrase("No vendors found", subFont));
-            noData.setColspan(5);
-            noData.setHorizontalAlignment(Element.ALIGN_CENTER);
-            noData.setPadding(8);
-            vtable.addCell(noData);
-        } else {
-            for (Vendor v : vendors) {
-                addCell(vtable, String.valueOf(v.getId()));
-                addCell(vtable, nvl(v.getName()));
-                addCell(vtable, nvl(v.getEmail()));
-                addCell(vtable, nvl(v.getContactNumber()));
-                addStatusCell(vtable, nvl(v.getStatus()));
+            if (vendors.isEmpty()) {
+                PdfPCell noData = new PdfPCell(new Phrase("No vendors found", subFont));
+                noData.setColspan(5);
+                noData.setHorizontalAlignment(Element.ALIGN_CENTER);
+                noData.setPadding(8);
+                vtable.addCell(noData);
+            } else {
+                for (Vendor v : vendors) {
+                    addCell(vtable, String.valueOf(v.getId()));
+                    addCell(vtable, nvl(v.getName()));
+                    addCell(vtable, nvl(v.getEmail()));
+                    addCell(vtable, nvl(v.getContactNumber()));
+                    addStatusCell(vtable, nvl(v.getStatus()));
+                }
             }
+            doc.add(vtable);
         }
-        doc.add(vtable);
 
         // ──────────────────── PURCHASE ORDERS TABLE ────────────────────
-        Paragraph posection = new Paragraph("Purchase Orders", sectionFont);
-        posection.setSpacingAfter(6);
-        doc.add(posection);
+        if (showPOs) {
+            Paragraph posection = new Paragraph("Purchase Orders", sectionFont);
+            posection.setSpacingAfter(6);
+            doc.add(posection);
 
-        PdfPTable ptable = new PdfPTable(6);
-        ptable.setWidthPercentage(100);
-        ptable.setWidths(new float[] { 2f, 3f, 2f, 2f, 2f, 2f });
-        String[] pHeaders = { "PO Number", "Vendor", "Status", "Total (₹)", "Created", "Updated" };
-        for (String h : pHeaders)
-            addHeader(ptable, h);
+            PdfPTable ptable = new PdfPTable(6);
+            ptable.setWidthPercentage(100);
+            ptable.setWidths(new float[] { 2f, 3f, 2f, 2f, 2f, 2f });
+            String[] pHeaders = { "PO Number", "Vendor", "Status", "Total (₹)", "Created", "Updated" };
+            for (String h : pHeaders)
+                addHeader(ptable, h);
 
-        if (pos.isEmpty()) {
-            PdfPCell noData = new PdfPCell(new Phrase("No purchase orders found", subFont));
-            noData.setColspan(6);
-            noData.setHorizontalAlignment(Element.ALIGN_CENTER);
-            noData.setPadding(8);
-            ptable.addCell(noData);
-        } else {
-            for (PurchaseOrder p : pos) {
-                double total = p.getItems() == null ? 0
-                        : p.getItems().stream().mapToDouble(i -> i.getQuantity() * i.getUnitPrice()).sum();
-                addCell(ptable, nvl(p.getPoNumber()));
-                addCell(ptable, p.getVendor() != null ? nvl(p.getVendor().getName()) : "—");
-                addStatusCell(ptable, nvl(p.getStatus()));
-                addCell(ptable, String.format("%.2f", total));
-                addCell(ptable, p.getCreatedAt() != null ? p.getCreatedAt().format(DATE_FMT) : "—");
-                addCell(ptable, p.getUpdatedAt() != null ? p.getUpdatedAt().format(DATE_FMT) : "—");
+            if (pos.isEmpty()) {
+                PdfPCell noData = new PdfPCell(new Phrase("No purchase orders found", subFont));
+                noData.setColspan(6);
+                noData.setHorizontalAlignment(Element.ALIGN_CENTER);
+                noData.setPadding(8);
+                ptable.addCell(noData);
+            } else {
+                for (PurchaseOrder p : pos) {
+                    double total = p.getItems() == null ? 0
+                            : p.getItems().stream().mapToDouble(i -> i.getQuantity() * i.getUnitPrice()).sum();
+                    addCell(ptable, nvl(p.getPoNumber()));
+                    addCell(ptable, p.getVendor() != null ? nvl(p.getVendor().getName()) : "—");
+                    addStatusCell(ptable, nvl(p.getStatus()));
+                    addCell(ptable, String.format("%.2f", total));
+                    addCell(ptable, p.getCreatedAt() != null ? p.getCreatedAt().format(DATE_FMT) : "—");
+                    addCell(ptable, p.getUpdatedAt() != null ? p.getUpdatedAt().format(DATE_FMT) : "—");
+                }
             }
+            doc.add(ptable);
         }
-        doc.add(ptable);
 
         // ── Footer ──
         com.itextpdf.text.Font footerFont = new com.itextpdf.text.Font(
@@ -245,51 +252,58 @@ public class ReportService {
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
 
+        boolean showVendors = request.getReportType() == null || "all".equalsIgnoreCase(request.getReportType()) || "vendor".equalsIgnoreCase(request.getReportType());
+        boolean showPOs = request.getReportType() == null || "all".equalsIgnoreCase(request.getReportType()) || "po".equalsIgnoreCase(request.getReportType());
+
         // ── Sheet 1: Vendors ──
-        Sheet vendorSheet = wb.createSheet("Vendors");
-        String[] vHeaders = { "ID", "Vendor Name", "Email", "Contact Number", "Status" };
-        Row vhRow = vendorSheet.createRow(0);
-        for (int i = 0; i < vHeaders.length; i++) {
-            Cell c = vhRow.createCell(i);
-            c.setCellValue(vHeaders[i]);
-            c.setCellStyle(headerStyle);
+        if (showVendors) {
+            Sheet vendorSheet = wb.createSheet("Vendors");
+            String[] vHeaders = { "ID", "Vendor Name", "Email", "Contact Number", "Status" };
+            Row vhRow = vendorSheet.createRow(0);
+            for (int i = 0; i < vHeaders.length; i++) {
+                Cell c = vhRow.createCell(i);
+                c.setCellValue(vHeaders[i]);
+                c.setCellStyle(headerStyle);
+            }
+            int r = 1;
+            for (Vendor v : vendors) {
+                Row row = vendorSheet.createRow(r++);
+                row.createCell(0).setCellValue(v.getId());
+                row.createCell(1).setCellValue(nvl(v.getName()));
+                row.createCell(2).setCellValue(nvl(v.getEmail()));
+                row.createCell(3).setCellValue(nvl(v.getContactNumber()));
+                row.createCell(4).setCellValue(nvl(v.getStatus()));
+            }
+            for (int i = 0; i < vHeaders.length; i++)
+                vendorSheet.autoSizeColumn(i);
         }
-        int r = 1;
-        for (Vendor v : vendors) {
-            Row row = vendorSheet.createRow(r++);
-            row.createCell(0).setCellValue(v.getId());
-            row.createCell(1).setCellValue(nvl(v.getName()));
-            row.createCell(2).setCellValue(nvl(v.getEmail()));
-            row.createCell(3).setCellValue(nvl(v.getContactNumber()));
-            row.createCell(4).setCellValue(nvl(v.getStatus()));
-        }
-        for (int i = 0; i < vHeaders.length; i++)
-            vendorSheet.autoSizeColumn(i);
 
         // ── Sheet 2: Purchase Orders ──
-        Sheet poSheet = wb.createSheet("Purchase Orders");
-        String[] pHeaders = { "PO Number", "Vendor Name", "Status", "Total Amount (INR)", "Created On",
-                "Last Updated" };
-        Row phRow = poSheet.createRow(0);
-        for (int i = 0; i < pHeaders.length; i++) {
-            Cell c = phRow.createCell(i);
-            c.setCellValue(pHeaders[i]);
-            c.setCellStyle(headerStyle);
+        if (showPOs) {
+            Sheet poSheet = wb.createSheet("Purchase Orders");
+            String[] pHeaders = { "PO Number", "Vendor Name", "Status", "Total Amount (INR)", "Created On",
+                    "Last Updated" };
+            Row phRow = poSheet.createRow(0);
+            for (int i = 0; i < pHeaders.length; i++) {
+                Cell c = phRow.createCell(i);
+                c.setCellValue(pHeaders[i]);
+                c.setCellStyle(headerStyle);
+            }
+            int pr = 1;
+            for (PurchaseOrder p : pos) {
+                double total = p.getItems() == null ? 0
+                        : p.getItems().stream().mapToDouble(i -> i.getQuantity() * i.getUnitPrice()).sum();
+                Row row = poSheet.createRow(pr++);
+                row.createCell(0).setCellValue(nvl(p.getPoNumber()));
+                row.createCell(1).setCellValue(p.getVendor() != null ? nvl(p.getVendor().getName()) : "—");
+                row.createCell(2).setCellValue(nvl(p.getStatus()));
+                row.createCell(3).setCellValue(total);
+                row.createCell(4).setCellValue(p.getCreatedAt() != null ? p.getCreatedAt().format(DATE_FMT) : "—");
+                row.createCell(5).setCellValue(p.getUpdatedAt() != null ? p.getUpdatedAt().format(DATE_FMT) : "—");
+            }
+            for (int i = 0; i < pHeaders.length; i++)
+                poSheet.autoSizeColumn(i);
         }
-        int pr = 1;
-        for (PurchaseOrder p : pos) {
-            double total = p.getItems() == null ? 0
-                    : p.getItems().stream().mapToDouble(i -> i.getQuantity() * i.getUnitPrice()).sum();
-            Row row = poSheet.createRow(pr++);
-            row.createCell(0).setCellValue(nvl(p.getPoNumber()));
-            row.createCell(1).setCellValue(p.getVendor() != null ? nvl(p.getVendor().getName()) : "—");
-            row.createCell(2).setCellValue(nvl(p.getStatus()));
-            row.createCell(3).setCellValue(total);
-            row.createCell(4).setCellValue(p.getCreatedAt() != null ? p.getCreatedAt().format(DATE_FMT) : "—");
-            row.createCell(5).setCellValue(p.getUpdatedAt() != null ? p.getUpdatedAt().format(DATE_FMT) : "—");
-        }
-        for (int i = 0; i < pHeaders.length; i++)
-            poSheet.autoSizeColumn(i);
 
         wb.write(out);
         wb.close();

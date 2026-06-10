@@ -13,6 +13,7 @@ const Reports = () => {
   const [vendors, setVendors] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeFormat, setActiveFormat] = useState<'pdf' | 'excel' | null>(null);
+  const [reportType, setReportType] = useState<'vendor' | 'po' | 'all'>('all');
 
   useEffect(() => {
     API.get('/vendor/all').then(({ data }) => setVendors(data || [])).catch(() => { });
@@ -22,7 +23,7 @@ const Reports = () => {
     setLoading(true);
     setActiveFormat(format);
     try {
-      const body: any = {};
+      const body: any = { reportType };
       if (vendorId) body.vendorId = +vendorId;
       if (poNumber.trim()) body.poNumber = poNumber.trim();
       if (startDate) body.startDate = startDate;
@@ -32,7 +33,8 @@ const Reports = () => {
       const url = window.URL.createObjectURL(new Blob([data]));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `procurement_report.${format === 'pdf' ? 'pdf' : 'xlsx'}`;
+      const today = new Date().toISOString().slice(0, 10);
+      a.download = `${reportType}_report_${today}.${format === 'pdf' ? 'pdf' : 'xlsx'}`;
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success(`✅ ${format.toUpperCase()} report downloaded`);
@@ -74,6 +76,18 @@ const Reports = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {/* Report Type Dropdown */}
+            <div className="col-span-1 sm:col-span-2">
+              <label className="form-label flex items-center gap-1.5">
+                <BarChart3 className="w-3.5 h-3.5" style={{ color: 'hsl(252,87%,70%)' }} /> Report Content Type
+              </label>
+              <select value={reportType} onChange={e => setReportType(e.target.value as 'vendor' | 'po' | 'all')} className="form-input">
+                <option value="all">Complete Summary (Vendors & Purchase Orders)</option>
+                <option value="vendor">Vendor Directory (Vendor Contact Details Only)</option>
+                <option value="po">Purchase Orders (Purchase Activity Only)</option>
+              </select>
+            </div>
+
             {/* Vendor Dropdown */}
             <div>
               <label className="form-label flex items-center gap-1.5">

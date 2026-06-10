@@ -10,6 +10,7 @@ public class ReportRequestDTO {
     private String poNumber; // Optional: filter by PO number (e.g. "po-123")
     private LocalDate startDate; // Optional: report start date
     private LocalDate endDate; // Optional: report end date
+    private String reportType; // Optional: "vendor", "po", or "all"
 
     public ReportRequestDTO() {
     }
@@ -60,5 +61,13 @@ public class ReportRequestDTO {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
     }
 }

@@ -72,8 +72,8 @@ public class DataInitializer implements CommandLineRunner {
                                                 needsUpdate = true;
                                         }
                                         // ✅ Always sync to the real admin email (fixes fake admin@company.com)
-                                        if (!"kushv619@gmail.com".equals(existingAdmin.getEmail())) {
-                                                existingAdmin.setEmail("kushv619@gmail.com");
+                                        if (!"hareeskumar132@gmail.com".equals(existingAdmin.getEmail())) {
+                                                existingAdmin.setEmail("hareeskumar132@gmail.com");
                                                 needsUpdate = true;
                                                 System.out.println(
                                                                 "✅ Patched existing admin: email updated to real address");
@@ -87,7 +87,7 @@ public class DataInitializer implements CommandLineRunner {
                                         User admin = new User();
                                         admin.setUsername("admin");
                                         admin.setPassword(passwordEncoder.encode("admin123"));
-                                        admin.setEmail("kushv619@gmail.com");
+                                        admin.setEmail("hareeskumar132@gmail.com");
                                         admin.setFullName("System Administrator");
                                         admin.setAccountStatus(AccountStatus.APPROVED);
                                         admin.setEnabled(true);
