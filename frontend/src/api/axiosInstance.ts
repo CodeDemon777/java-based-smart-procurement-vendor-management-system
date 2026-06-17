@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use relative URL so Vite's proxy forwards requests to backend (avoids CORS)
-const API = axios.create({ baseURL: '/' });
+// Use environment variable for API URL in production, fall back to relative path for Vite local proxying
+const API = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/' });
 
 API.interceptors.request.use(cfg => {
   const token = localStorage.getItem('procurementToken');

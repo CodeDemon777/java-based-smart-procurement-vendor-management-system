@@ -62,13 +62,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Add your Lovable frontend URL here + localhost for testing
-        config.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",   // Vite dev server
-                "http://localhost:3000",   // React dev server
-                "http://localhost:8080",
-                "https://*.lovable.app",   // Lovable preview
-                "https://*.lovableproject.com"
+        // ✅ Support CORS patterns (allows subdomains like Vercel and Lovable)
+        config.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:[*]",
+                "https://*.lovable.app",
+                "https://*.lovableproject.com",
+                "https://*.vercel.app"
         ));
 
         config.setAllowedMethods(Arrays.asList(
